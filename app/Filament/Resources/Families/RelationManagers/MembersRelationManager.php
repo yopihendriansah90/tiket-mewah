@@ -23,8 +23,10 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Support\Enums\FontWeight;
 
 class MembersRelationManager extends RelationManager
 {
@@ -59,9 +61,17 @@ class MembersRelationManager extends RelationManager
                 TextInput::make('class_name')
                     ->label('Kelas')
                     ->hintIcon('heroicon-m-question-mark-circle', 'Isi kelas siswa jika anggota ini adalah siswa. Boleh dikosongkan untuk orang tua atau tamu.'),
-                TextInput::make('relation_label')
-                    ->label('Hubungan dengan siswa')
-                    ->hintIcon('heroicon-m-question-mark-circle', 'Label bebas seperti Ayah, Ibu, Wali, Paman, Tante, atau Pendamping untuk memperjelas hubungan anggota dengan siswa.'),
+                Select::make('relation_label')
+                    ->label('Hubungan dengan keluarga')
+                    ->hintIcon('heroicon-m-question-mark-circle', 'Pilih hubungan anggota dengan keluarga atau siswa utama agar data lebih konsisten.')
+                    ->options([
+                        'Ayah' => 'Ayah',
+                        'Ibu' => 'Ibu',
+                        'Wali Siswa' => 'Wali Siswa',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->searchable()
+                    ->preload(),
                 Toggle::make('is_primary_student')
                     ->label('Siswa utama')
                     ->hintIcon('heroicon-m-question-mark-circle', 'Aktifkan hanya untuk siswa utama dalam keluarga ini.')
@@ -189,14 +199,25 @@ class MembersRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
+            ->recordAction('view')
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
                 TextColumn::make('member_type')
                     ->label('Tipe anggota')
                     ->formatStateUsing(fn (?string $state): ?string => EnumOptions::label($state))
                     ->searchable(),
                 TextColumn::make('name')
                     ->label('Nama')
-                    ->searchable(),
+                    ->searchable()
+                    ->color('primary')
+                    ->weight(FontWeight::Medium)
+                    ->action(
+                        ViewAction::make('viewFromName')
+                            ->label('Lihat')
+                            ->icon('heroicon-o-eye'),
+                    ),
                 TextColumn::make('gender')
                     ->label('Jenis kelamin')
                     ->formatStateUsing(fn (?string $state): ?string => EnumOptions::label($state))
@@ -256,13 +277,26 @@ class MembersRelationManager extends RelationManager
                     ->options(EnumOptions::from(FamilyMemberCheckinStatus::class)),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->label('Tambah Anggota')
+                    ->icon('heroicon-o-user-plus'),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()
+                    ->label('Lihat')
+                    ->icon('heroicon-o-eye')
+                    ->link()
+                    ->color('gray'),
+                EditAction::make()
+                    ->label('Edit')
+                    ->icon('heroicon-o-pencil-square')
+                    ->link()
+                    ->color('warning')
+                    ->modalHeading('Edit Anggota')
+                    ->modalSubmitActionLabel('Simpan perubahan'),
                 DeleteAction::make(),
-            ])
+            ], position: RecordActionsPosition::BeforeColumns)
+            ->recordActionsColumnLabel('Aksi')
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Families\Pages;
 
 use App\Filament\Resources\Families\FamilyResource;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditFamily extends EditRecord
@@ -14,8 +13,12 @@ class EditFamily extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
             DeleteAction::make(),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return FamilyResource::getUrl('index');
     }
 }

@@ -95,7 +95,7 @@ class TicketGeneratorService
 
     private function ticketCode(Family $family): string
     {
-        return Str::of("EVT-{$family->event_id}-{$family->family_code}")
+        return Str::of("{$family->event_id}-{$family->family_code}")
             ->upper()
             ->replaceMatches('/[^A-Z0-9-]/', '-')
             ->replaceMatches('/-+/', '-')

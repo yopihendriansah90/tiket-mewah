@@ -45,9 +45,17 @@ class FamilyMemberForm
                 TextInput::make('class_name')
                     ->label('Kelas')
                     ->hintIcon('heroicon-m-question-mark-circle', 'Isi kelas siswa jika anggota ini adalah siswa. Boleh dikosongkan untuk orang tua atau tamu.'),
-                TextInput::make('relation_label')
-                    ->label('Hubungan dengan siswa')
-                    ->hintIcon('heroicon-m-question-mark-circle', 'Label bebas seperti Ayah, Ibu, Wali, Paman, Tante, atau Pendamping untuk memperjelas hubungan anggota dengan siswa.'),
+                Select::make('relation_label')
+                    ->label('Hubungan dengan keluarga')
+                    ->hintIcon('heroicon-m-question-mark-circle', 'Pilih hubungan anggota dengan keluarga atau siswa utama agar data lebih konsisten.')
+                    ->options([
+                        'Ayah' => 'Ayah',
+                        'Ibu' => 'Ibu',
+                        'Wali Siswa' => 'Wali Siswa',
+                        'Lainnya' => 'Lainnya',
+                    ])
+                    ->searchable()
+                    ->preload(),
                 Toggle::make('is_primary_student')
                     ->label('Siswa utama')
                     ->hintIcon('heroicon-m-question-mark-circle', 'Aktifkan hanya untuk siswa utama dalam keluarga ini.')

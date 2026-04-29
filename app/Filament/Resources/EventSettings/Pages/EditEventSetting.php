@@ -18,4 +18,9 @@ class EditEventSetting extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return EventSettingResource::getUrl('index');
+    }
 }

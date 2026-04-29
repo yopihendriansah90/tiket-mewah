@@ -5,11 +5,9 @@ namespace App\Filament\Resources\Families;
 use App\Filament\Resources\Families\Pages\CreateFamily;
 use App\Filament\Resources\Families\Pages\EditFamily;
 use App\Filament\Resources\Families\Pages\ListFamilies;
-use App\Filament\Resources\Families\Pages\ViewFamily;
 use App\Filament\Resources\Families\RelationManagers\MembersRelationManager;
 use App\Filament\Resources\Families\RelationManagers\TicketRelationManager;
 use App\Filament\Resources\Families\Schemas\FamilyForm;
-use App\Filament\Resources\Families\Schemas\FamilyInfolist;
 use App\Filament\Resources\Families\Tables\FamiliesTable;
 use App\Models\Family;
 use BackedEnum;
@@ -41,11 +39,6 @@ class FamilyResource extends Resource
         return FamilyForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return FamilyInfolist::configure($schema);
-    }
-
     public static function table(Table $table): Table
     {
         return FamiliesTable::configure($table);
@@ -64,7 +57,6 @@ class FamilyResource extends Resource
         return [
             'index' => ListFamilies::route('/'),
             'create' => CreateFamily::route('/create'),
-            'view' => ViewFamily::route('/{record}'),
             'edit' => EditFamily::route('/{record}/edit'),
         ];
     }

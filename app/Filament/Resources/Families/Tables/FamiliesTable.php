@@ -11,7 +11,6 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -24,7 +23,11 @@ class FamiliesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordAction('edit')
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
                 TextColumn::make('event.name')
                     ->label('Acara')
                     ->searchable(),
@@ -79,7 +82,6 @@ class FamiliesTable
                     ->authorize(fn (): bool => auth()->user()?->can('Create:Ticket') ?? false)
                     ->requiresConfirmation()
                     ->action(fn (Family $record): null => self::generateTicket($record)),
-                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

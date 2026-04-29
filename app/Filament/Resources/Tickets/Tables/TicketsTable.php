@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\Tickets\Tables;
 
+use App\Enums\TicketStatus;
+use App\Models\Ticket;
+use App\Services\Ticket\TicketPdfService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -61,6 +65,37 @@ class TicketsTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('generatePdf')
+                    ->label('Generate PDF')
+                    ->icon('heroicon-o-document')
+                    ->color('info')
+                    ->visible(fn (Ticket $record): bool => app(TicketPdfService::class)->canGenerate($record))
+                    ->action(function (Ticket $record): void {
+                        app(TicketPdfService::class)->generate($record);
+                    })
+                    ->successNotificationTitle('PDF tiket berhasil dibuat'),
+                Action::make('downloadPdf')
+                    ->label('Download PDF')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->visible(fn (Ticket $record): bool => app(TicketPdfService::class)->hasPdfFile($record))
+                    ->action(fn (Ticket $record) => app(TicketPdfService::class)->download($record)),
+                Action::make('deactivate')
+                    ->label('Nonaktifkan')
+                    ->icon('heroicon-o-no-symbol')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Nonaktifkan Tiket')
+                    ->modalDescription('Gunakan aksi ini jika tiket dicuri atau tidak boleh dipakai lagi. Tiket akan diubah menjadi tidak aktif.')
+                    ->visible(fn (Ticket $record): bool => ! in_array($record->status, [
+                        TicketStatus::Revoked->value,
+                        TicketStatus::Cancelled->value,
+                        TicketStatus::Replaced->value,
+                    ], true))
+                    ->action(function (Ticket $record): void {
+                        $record->deactivate();
+                    })
+                    ->successNotificationTitle('Tiket berhasil dinonaktifkan'),
                 EditAction::make(),
             ])
             ->toolbarActions([

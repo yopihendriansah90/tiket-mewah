@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateEventSetting extends CreateRecord
 {
     protected static string $resource = EventSettingResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return EventSettingResource::getUrl('index');
+    }
 }

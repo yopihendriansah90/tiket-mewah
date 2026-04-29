@@ -18,4 +18,9 @@ class EditEventGate extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return EventGateResource::getUrl('index');
+    }
 }
