@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\TicketFiles\Tables;
 
+use App\Models\TicketFile;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -45,6 +49,14 @@ class TicketFilesTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('preview')
+                    ->label('Preview')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (TicketFile $record): ?string => $record->previewUrl(), shouldOpenInNewTab: true),
+                Action::make('download')
+                    ->label('Download')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn (TicketFile $record): ?string => $record->previewUrl(), shouldOpenInNewTab: true),
                 EditAction::make(),
             ])
             ->toolbarActions([
