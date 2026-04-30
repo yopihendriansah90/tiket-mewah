@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Tickets\Tables;
 
 use App\Enums\TicketStatus;
 use App\Models\Ticket;
-use App\Services\Ticket\TicketPdfService;
+use App\Support\TicketFileActions;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -65,21 +65,9 @@ class TicketsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                Action::make('generatePdf')
-                    ->label('Generate PDF')
-                    ->icon('heroicon-o-document')
-                    ->color('info')
-                    ->visible(fn (Ticket $record): bool => app(TicketPdfService::class)->canGenerate($record))
-                    ->action(function (Ticket $record): void {
-                        app(TicketPdfService::class)->generate($record);
-                    })
-                    ->successNotificationTitle('PDF tiket berhasil dibuat'),
-                Action::make('downloadPdf')
-                    ->label('Download PDF')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('gray')
-                    ->visible(fn (Ticket $record): bool => app(TicketPdfService::class)->hasPdfFile($record))
-                    ->action(fn (Ticket $record) => app(TicketPdfService::class)->download($record)),
+                TicketFileActions::generateConfigured(),
+                TicketFileActions::downloadPdf(),
+                TicketFileActions::downloadPng(),
                 Action::make('deactivate')
                     ->label('Nonaktifkan')
                     ->icon('heroicon-o-no-symbol')

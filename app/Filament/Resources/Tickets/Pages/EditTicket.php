@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Tickets\Pages;
 
 use App\Enums\TicketStatus;
 use App\Filament\Resources\Tickets\TicketResource;
-use App\Services\Ticket\TicketPdfService;
+use App\Support\TicketFileActions;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
@@ -18,21 +18,9 @@ class EditTicket extends EditRecord
     {
         return [
             ViewAction::make(),
-            Action::make('generatePdf')
-                ->label('Generate PDF')
-                ->icon('heroicon-o-document')
-                ->color('info')
-                ->visible(fn (): bool => app(TicketPdfService::class)->canGenerate($this->record))
-                ->action(function (): void {
-                    app(TicketPdfService::class)->generate($this->record);
-                })
-                ->successNotificationTitle('PDF tiket berhasil dibuat'),
-            Action::make('downloadPdf')
-                ->label('Download PDF')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->color('gray')
-                ->visible(fn (): bool => app(TicketPdfService::class)->hasPdfFile($this->record))
-                ->action(fn () => app(TicketPdfService::class)->download($this->record)),
+            TicketFileActions::generateConfigured()->record($this->record),
+            TicketFileActions::downloadPdf()->record($this->record),
+            TicketFileActions::downloadPng()->record($this->record),
             Action::make('deactivate')
                 ->label('Nonaktifkan')
                 ->icon('heroicon-o-no-symbol')
