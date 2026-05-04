@@ -5,12 +5,14 @@ namespace App\Filament\Resources\Families\Pages;
 use App\Filament\Resources\Families\FamilyResource;
 use App\Models\Event;
 use App\Services\Import\FamilyCsvImportService;
+use App\Services\Ticket\FamilyTicketReadinessService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class ListFamilies extends ListRecords
@@ -59,6 +61,46 @@ class ListFamilies extends ListRecords
                         ->title('Import keluarga selesai')
                         ->body($message)
                         ->color($errorCount > 0 ? 'warning' : 'success')
+                        ->send();
+                }),
+            Action::make('validatePreGenerate')
+                ->label('Cek Kesiapan Generate')
+                ->icon('heroicon-o-clipboard-document-check')
+                ->form([
+                    Select::make('event_id')
+                        ->label('Event')
+                        ->options(Event::query()->orderBy('name')->pluck('name', 'id'))
+                        ->searchable()
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $event = Event::query()->findOrFail((int) $data['event_id']);
+                    $service = app(FamilyTicketReadinessService::class);
+                    $result = $service->validate($event);
+
+                    $body = "Event {$result['event_name']}: total {$result['total_families']} keluarga, siap {$result['ready_families']}, belum siap {$result['not_ready_families']}.";
+
+                    if (! empty($result['issues'])) {
+                        $samples = collect($result['issues'])
+                            ->take(5)
+                            ->map(fn (array $issue): string => $issue['family_code'].' ('.implode('; ', $issue['reasons']).')')
+                            ->implode(' | ');
+
+                        $body .= ' Contoh masalah: '.$samples;
+                    }
+
+                    $reportPath = 'reports/pre-generate-readiness-'.$event->id.'-'.Str::lower(Str::ulid()).'.csv';
+                    Storage::disk('local')->put($reportPath, $service->toCsv($result));
+
+                    Notification::make()
+                        ->title('Hasil validasi pre-generate')
+                        ->body($body)
+                        ->color($result['not_ready_families'] > 0 ? 'warning' : 'success')
+                        ->actions([
+                            Action::make('downloadReport')
+                                ->label('Download Laporan')
+                                ->url(route('families.pre-generate-report.download', ['path' => $reportPath]), shouldOpenInNewTab: true),
+                        ])
                         ->send();
                 }),
             CreateAction::make(),
